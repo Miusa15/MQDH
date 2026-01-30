@@ -47,25 +47,22 @@
       padding: 0 0.02em;
     }
 
-    .blink {
-      animation: blink 1.2s infinite ease-in-out;
-    }
+    .blink { animation: blink 1.2s infinite ease-in-out; }
 
     @keyframes blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
 
-    /* Escala responsive tipo triángulo */
     .m { font-size: clamp(3rem, 8vw, 4rem); }
     .q { font-size: clamp(5rem, 14vw, 7rem); }
     .d { font-size: clamp(5rem, 14vw, 7rem); }
     .h { font-size: clamp(3rem, 8vw, 4rem); }
 
-    @media (max-width: 480px) {
-      .texto {
-        letter-spacing: -0.06em;
-      }
+    input.hidden {
+      position: fixed;
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -77,15 +74,29 @@
     <span class="h" data-letter="h">H</span>
   </div>
 
+  <input class="hidden" id="hiddenInput" autocomplete="off" />
+
   <script>
     const colores = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#1dd1a1'];
-    const secuenciaMQDH = ['q', 'm', 'm', 'd', 'h'];
-    const secuenciaFECHA = ['f', 'e', 'c', 'h', 'a'];
 
+    const secuenciaMQDH = ['q','m','m','d','h'];
+    const secuenciaFECHA = ['f','e','c','h','a'];
+
+    const combinacionesTeclado = {
+      punk: 'CERCA PERO NO HABRA AQUI.',
+      trap: 'HABRA UNA.',
+      acustica: 'NO SE DE SENTIMIENTOS PERO SI.',
+      fusion: 'SERA LO MEJOR DE LO MEJOR.',
+      regueton: 'TU SABES QUE SI.'
+    };
+
+    let bufferClick = [];
     let bufferMQDH = [];
     let bufferFECHA = [];
+    let bufferKey = [];
 
     const logo = document.getElementById('logo');
+    const input = document.getElementById('hiddenInput');
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playClick(freq) {
@@ -93,91 +104,44 @@
       const gain = audioCtx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
       osc.connect(gain).connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
+      osc.stop(audioCtx.currentTime + 0.12);
     }
 
     function playBell(step = 0) {
-      const baseFreq = 600;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(baseFreq + step * 180, audioCtx.currentTime);
+      osc.frequency.value = 600 + step * 180;
       gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
       osc.connect(gain).connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.5);
-    }
-
-    function makeInteractive() {
-      const letras = logo.querySelectorAll('span');
-
-      letras.forEach((letra, i) => {
-        if (letra.dataset.letter === '.') letra.classList.add('blink');
-
-        letra.onclick = () => {
-          if (audioCtx.state === 'suspended') audioCtx.resume();
-
-          letra.style.color = colores[Math.floor(Math.random() * colores.length)];
-          letra.style.transform = 'translateY(-0.12em)';
-
-          const valor = letra.dataset.letter;
-          playClick(300 + i * 100);
-
-          setTimeout(() => letra.style.transform = 'translateY(0)', 120);
-
-          if (valor === '.') {
-            volverInicio();
-            return;
-          }
-
-          const esperadoMQDH = secuenciaMQDH[bufferMQDH.length];
-          if (valor === esperadoMQDH) {
-            playBell(bufferMQDH.length);
-            bufferMQDH.push(valor);
-          } else bufferMQDH = [];
-
-          if (bufferMQDH.length === secuenciaMQDH.length) {
-            cambiarTexto('MUSICA QUE DISFRUTO HACER');
-            return;
-          }
-
-          const esperadoFECHA = secuenciaFECHA[bufferFECHA.length];
-          if (valor === esperadoFECHA) {
-            playBell(bufferFECHA.length);
-            bufferFECHA.push(valor);
-          } else bufferFECHA = [];
-
-          if (bufferFECHA.length === secuenciaFECHA.length) {
-            cambiarTexto('19/03 PARTE 1.');
-          }
-        };
-      });
+      osc.stop(audioCtx.currentTime + 0.4);
     }
 
     function cambiarTexto(texto) {
       bufferMQDH = [];
       bufferFECHA = [];
+      bufferKey = [];
       logo.classList.add('cambiado');
       logo.innerHTML = '';
-
-      texto.split('').forEach(char => {
-        const span = document.createElement('span');
-        span.textContent = char === ' ' ? '\u00A0' : char;
-        span.dataset.letter = char.toLowerCase();
-        logo.appendChild(span);
+      texto.split('').forEach(c => {
+        const s = document.createElement('span');
+        s.textContent = c === ' ' ? '\u00A0' : c;
+        s.dataset.letter = c.toLowerCase();
+        logo.appendChild(s);
       });
-
       makeInteractive();
     }
 
     function volverInicio() {
       bufferMQDH = [];
       bufferFECHA = [];
+      bufferKey = [];
       logo.classList.remove('cambiado');
       logo.innerHTML = `
         <span class="m" data-letter="m">M</span>
@@ -187,6 +151,64 @@
       `;
       makeInteractive();
     }
+
+    function makeInteractive() {
+      logo.querySelectorAll('span').forEach((letra, i) => {
+        if (letra.dataset.letter === '.') letra.classList.add('blink');
+
+        letra.onclick = () => {
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+
+          letra.style.color = colores[Math.floor(Math.random() * colores.length)];
+          letra.style.transform = 'translateY(-0.12em)';
+          playClick(300 + i * 90);
+          setTimeout(() => letra.style.transform = 'translateY(0)', 120);
+
+          const v = letra.dataset.letter;
+          bufferClick.push(v);
+          if (bufferClick.join('').endsWith('chat')) {
+            input.focus();
+            bufferClick = [];
+          }
+
+          if (v === '.') { volverInicio(); return; }
+
+          const esperadoMQDH = secuenciaMQDH[bufferMQDH.length];
+          if (v === esperadoMQDH) {
+            playBell(bufferMQDH.length);
+            bufferMQDH.push(v);
+          } else bufferMQDH = [];
+
+          if (bufferMQDH.length === secuenciaMQDH.length) {
+            cambiarTexto('MUSICA QUE DISFRUTO HACER');
+            return;
+          }
+
+          const esperadoFECHA = secuenciaFECHA[bufferFECHA.length];
+          if (v === esperadoFECHA) {
+            playBell(bufferFECHA.length);
+            bufferFECHA.push(v);
+          } else bufferFECHA = [];
+
+          if (bufferFECHA.length === secuenciaFECHA.length) {
+            cambiarTexto('19/03 PARTE 1.');
+          }
+        };
+      });
+    }
+
+    input.addEventListener('input', () => {
+      bufferKey.push(input.value.slice(-1).toLowerCase());
+      input.value = '';
+
+      const texto = bufferKey.join('');
+      Object.keys(combinacionesTeclado).forEach(key => {
+        if (texto.endsWith(key)) {
+          cambiarTexto(combinacionesTeclado[key]);
+          input.blur();
+        }
+      });
+    });
 
     makeInteractive();
   </script>
