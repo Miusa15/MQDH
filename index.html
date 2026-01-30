@@ -83,22 +83,22 @@
     const secuenciaFECHA = ['f','e','c','h','a'];
 
     const combinacionesTeclado = {
-      'punk': 'CERCA PERO NO HABRA AQUI.',
-      'trap': 'HABRA UNA.',
-      'acustica': 'NO SE DE SENTIMIENTOS PERO SI.',
-      'fusion': 'SERA LO MEJOR DE LO MEJOR.',
-      'regueton': 'TU SABES QUE SI.',
-      'que es': 'UN ALBUM PUEH.',
+      'punk': 'CERCA PERO NO HABRA AQUI',
+      'trap': 'HABRA UNA',
+      'acustica': 'NO SE DE SENTIMIENTOS PERO SI',
+      'fusion': 'SERA LO MEJOR DE LO MEJOR',
+      'regueton': 'TU SABES QUE SI',
+      'que es': 'UN ALBUM PUEH',
       'jazz': 'ME CONOCES BIEN, GRACIAS :)',
-      'electronica': 'MAYORMENTE LO TIENE.',
-      'guitarra': 'NO ME GUSTA PARA NADA, ASI QUE NO HABRA.',
-      'percusion': 'COMO SIEMPRE UNA.'
+      'electronica': 'MAYORMENTE LO TIENE',
+      'guitarra': 'NO ME GUSTA PARA NADA, ASI QUE NO HABRA',
+      'percusion': 'COMO SIEMPRE UNA'
     };
 
     let bufferClick = [];
     let bufferMQDH = [];
     let bufferFECHA = [];
-    let bufferKey = [];
+    let bufferKey = '';
 
     const logo = document.getElementById('logo');
     const input = document.getElementById('hiddenInput');
@@ -139,7 +139,7 @@
 
       textoFinal.split('').forEach(c => {
         const s = document.createElement('span');
-        s.textContent = c === ' ' ? '\u00A0' : c;
+        s.textContent = c === ' ' ? ' ' : c;
         s.dataset.letter = c.toLowerCase();
         if (c === '.') s.classList.add('blink');
         logo.appendChild(s);
@@ -207,7 +207,19 @@
     }
 
     input.addEventListener('input', () => {
-      const char = input.value.slice(-1).toLowerCase();
+      const char = input.value.toLowerCase();
+      input.value = '';
+
+      bufferKey += char;
+
+      Object.keys(combinacionesTeclado).forEach(key => {
+        if (bufferKey.endsWith(key)) {
+          cambiarTexto(combinacionesTeclado[key]);
+          bufferKey = '';
+          input.blur();
+        }
+      });
+    });
       input.value = '';
 
       bufferKey.push(char);
