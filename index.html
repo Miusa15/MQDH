@@ -1,240 +1,204 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MQDH</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MQDH</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Liberation+Sans:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Liberation+Sans:wght@400;700&display=swap" rel="stylesheet">
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #0e0e0e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "Liberation Sans", system-ui, sans-serif;
-      color: #ffffff;
-      text-transform: uppercase;
-      overflow: hidden;
-    }
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:#0e0e0e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:"Liberation Sans",system-ui,sans-serif;
+  color:#fff;
+  text-transform:uppercase;
+  overflow:hidden;
+}
 
-    .texto {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      font-weight: 700;
-      letter-spacing: -0.08em;
-      user-select: none;
-      max-width: 100vw;
-      flex-wrap: wrap;
-      text-align: center;
-    }
+#sky{
+  position:absolute;
+  inset:0;
+  z-index:0;
+}
 
-    .texto.cambiado {
-      font-size: clamp(1.4rem, 4vw, 2.4rem);
-      letter-spacing: 0.08em;
-    }
+.star{
+  position:absolute;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  opacity:.85;
+  cursor:pointer;
+  animation: twinkle 4s infinite ease-in-out;
+}
 
-    .texto span {
-      line-height: 1;
-      cursor: pointer;
-      transition: color 0.15s ease, transform 0.15s ease, opacity 0.3s ease;
-      padding: 0 0.02em;
-    }
+@keyframes twinkle{
+  0%,100%{opacity:.9}
+  50%{opacity:.4}
+}
 
-    .blink {
-      animation: blink 1.2s infinite ease-in-out;
-    }
+.texto{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:flex-end;
+  font-weight:700;
+  letter-spacing:-0.08em;
+  user-select:none;
+}
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+.texto.cambiado{
+  font-size:clamp(1.2rem,4vw,2.3rem);
+  letter-spacing:.08em;
+  flex-wrap:wrap;
+  text-align:center;
+}
 
-    .m { font-size: clamp(3rem, 8vw, 4rem); }
-    .q { font-size: clamp(5rem, 14vw, 7rem); }
-    .d { font-size: clamp(5rem, 14vw, 7rem); }
-    .h { font-size: clamp(3rem, 8vw, 4rem); }
+.texto span{
+  cursor:pointer;
+  transition:color .15s,transform .15s,opacity .3s;
+  line-height:1;
+}
 
-    input.hidden {
-      position: fixed;
-      opacity: 0;
-      pointer-events: none;
-    }
-  </style>
+.blink{animation:blink 1.2s infinite}
+
+@keyframes blink{
+  0%,100%{opacity:1}
+  50%{opacity:.35}
+}
+
+.m{font-size:clamp(3rem,8vw,4rem)}
+.q{font-size:clamp(5rem,14vw,7rem)}
+.d{font-size:clamp(5rem,14vw,7rem)}
+.h{font-size:clamp(3rem,8vw,4rem)}
+
+input.hidden{
+  position:fixed;
+  opacity:0;
+  pointer-events:none;
+}
+</style>
 </head>
-<body>
 
-  <div class="texto" id="logo">
+<body>
+<div id="sky"></div>
+
+<div class="texto" id="logo">
+  <span class="m" data-letter="m">M</span>
+  <span class="q" data-letter="q">Q</span>
+  <span class="d" data-letter="d">D</span>
+  <span class="h" data-letter="h">H</span>
+</div>
+
+<input id="hiddenInput" class="hidden" autocomplete="off">
+
+<script>
+const logo = document.getElementById('logo');
+const sky = document.getElementById('sky');
+const input = document.getElementById('hiddenInput');
+
+const combinaciones = {
+  punk:{text:"CERCA PERO NO HABRA AQUI.",colors:["#ff6b6b","#c44536","#f19066"]},
+  trap:{text:"HABRA UNA.",colors:["#54a0ff","#2e86de","#341f97"]},
+  acustica:{text:"NO SE DE SENTIMIENTOS PERO SI.",colors:["#feca57","#ff9f43","#fff3cd"]},
+  fusion:{text:"SERA LO MEJOR DE LO MEJOR.",colors:["#5f27cd","#1dd1a1","#48dbfb"]},
+  regueton:{text:"TU SABES QUE SI.",colors:["#ee5253","#f368e0","#ff9ff3"]},
+  "que es":{text:"UN ALBUM PUEH.",colors:["#c8d6e5","#8395a7","#576574"]},
+  jazz:{text:"ME CONOCES BIEN, GRACIAS :)",colors:["#f5f6fa","#c23616","#2f3640"]},
+  electronica:{text:"MAYORMENTE LO TIENE.",colors:["#00d2d3","#01a3a4","#222f3e"]},
+  guitarra:{text:"NO ME GUSTA PARA NADA, ASI QUE NO HABRA.",colors:["#b71540","#6F1E51","#130f40"]},
+  percusion:{text:"COMO SIEMPRE UNA.",colors:["#f0932b","#eb4d4b","#4834d4"]},
+  pop:{text:"QUIERO SERLO PERO ME AGRADA SER COMO SOY, ENTIENDES VERDAD?",colors:["#ff9ff3","#feca57","#48dbfb"]}
+};
+
+let bufferClick=[];
+let bufferKey="";
+
+function saveStar(key){
+  const stars=JSON.parse(localStorage.getItem("mqdh-stars")||"[]");
+  if(stars.find(s=>s.key===key)) return;
+  stars.push({
+    key,
+    x:Math.random()*100,
+    y:Math.random()*100
+  });
+  localStorage.setItem("mqdh-stars",JSON.stringify(stars));
+  drawStars();
+}
+
+function drawStars(){
+  sky.innerHTML="";
+  const stars=JSON.parse(localStorage.getItem("mqdh-stars")||"[]");
+  stars.forEach(s=>{
+    const star=document.createElement("div");
+    star.className="star";
+    star.style.left=s.x+"%";
+    star.style.top=s.y+"%";
+    star.style.background=combinaciones[s.key].colors[0];
+    star.onclick=()=>cambiarTexto(combinaciones[s.key].text,s.key);
+    sky.appendChild(star);
+  });
+}
+
+function cambiarTexto(text,key){
+  logo.classList.add("cambiado");
+  logo.innerHTML="";
+  text.split("").forEach(c=>{
+    const s=document.createElement("span");
+    s.textContent=c===" "?" ":c;
+    s.style.color=randomColor(key);
+    if(c===".") s.classList.add("blink");
+    logo.appendChild(s);
+  });
+  if(key) saveStar(key);
+}
+
+function volverInicio(){
+  logo.classList.remove("cambiado");
+  logo.innerHTML=`
     <span class="m" data-letter="m">M</span>
     <span class="q" data-letter="q">Q</span>
     <span class="d" data-letter="d">D</span>
     <span class="h" data-letter="h">H</span>
-  </div>
+  `;
+}
 
-  <input class="hidden" id="hiddenInput" autocomplete="off" />
+function randomColor(key){
+  const c=combinaciones[key]?.colors||["#fff"];
+  return c[Math.floor(Math.random()*c.length)];
+}
 
-  <script>
-    const colores = ['#ff6b6b', '#feca57', '#54a0ff', '#5f27cd', '#1dd1a1'];
+logo.addEventListener("click",e=>{
+  const v=e.target.dataset?.letter;
+  if(!v) return;
+  bufferClick.push(v);
+  if(bufferClick.join("").endsWith("chat")){
+    input.focus();
+    bufferClick=[];
+  }
+  if(v===".") volverInicio();
+});
 
-    const secuenciaMQDH = ['q','m','m','d','h'];
-    const secuenciaFECHA = ['f','e','c','h','a'];
-
-    const combinacionesTeclado = {
-      'punk': 'CERCA PERO NO HABRA AQUI',
-      'trap': 'HABRA UNA',
-      'acustica': 'NO SE DE SENTIMIENTOS PERO SI',
-      'fusion': 'SERA LO MEJOR DE LO MEJOR',
-      'regueton': 'TU SABES QUE SI',
-      'que es': 'UN ALBUM PUEH',
-      'jazz': 'ME CONOCES BIEN, GRACIAS :)',
-      'electronica': 'MAYORMENTE LO TIENE',
-      'guitarra': 'NO ME GUSTA PARA NADA, ASI QUE NO HABRA',
-      'percusion': 'COMO SIEMPRE UNA'
-    };
-
-    let bufferClick = [];
-    let bufferMQDH = [];
-    let bufferFECHA = [];
-    let bufferKey = '';
-
-    const logo = document.getElementById('logo');
-    const input = document.getElementById('hiddenInput');
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playClick(freq) {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.12);
+input.addEventListener("input",()=>{
+  bufferKey+=input.value.toLowerCase();
+  input.value="";
+  Object.keys(combinaciones).forEach(k=>{
+    if(bufferKey.endsWith(k)){
+      cambiarTexto(combinaciones[k].text,k);
+      bufferKey="";
+      input.blur();
     }
+  });
+});
 
-    function playBell(step = 0) {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = 600 + step * 180;
-      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.4);
-    }
-
-    function cambiarTexto(texto) {
-      bufferMQDH = [];
-      bufferFECHA = [];
-      bufferKey = '';
-      bufferClick = [];
-
-      logo.classList.add('cambiado');
-      logo.innerHTML = '';
-
-      const textoFinal = texto.endsWith('.') ? texto : texto + '.';
-
-      textoFinal.split('').forEach(c => {
-        const s = document.createElement('span');
-        s.textContent = c === ' ' ? '\u00A0' : c;
-        s.dataset.letter = c.toLowerCase();
-        if (c === '.') s.classList.add('blink');
-        logo.appendChild(s);
-      });
-
-      makeInteractive();
-    }
-
-    function volverInicio() {
-      bufferMQDH = [];
-      bufferFECHA = [];
-      bufferKey = '';
-      bufferClick = [];
-
-      logo.classList.remove('cambiado');
-      logo.innerHTML = `
-        <span class="m" data-letter="m">M</span>
-        <span class="q" data-letter="q">Q</span>
-        <span class="d" data-letter="d">D</span>
-        <span class="h" data-letter="h">H</span>
-      `;
-      makeInteractive();
-    }
-
-    function makeInteractive() {
-      logo.querySelectorAll('span').forEach((letra, i) => {
-        letra.onclick = () => {
-          if (audioCtx.state === 'suspended') audioCtx.resume();
-
-          letra.style.color = colores[Math.floor(Math.random() * colores.length)];
-          letra.style.transform = 'translateY(-0.12em)';
-          playClick(300 + i * 90);
-          setTimeout(() => letra.style.transform = 'translateY(0)', 120);
-
-          const v = letra.dataset.letter;
-          bufferClick.push(v);
-          bufferClick = bufferClick.slice(-4);
-
-          if (bufferClick.join('') === 'chat') {
-            input.focus();
-            bufferClick = [];
-          }
-
-          if (v === '.') {
-            volverInicio();
-            return;
-          }
-
-          const esperadoMQDH = secuenciaMQDH[bufferMQDH.length];
-          if (v === esperadoMQDH) {
-            playBell(bufferMQDH.length);
-            bufferMQDH.push(v);
-          } else bufferMQDH = [];
-
-          if (bufferMQDH.length === secuenciaMQDH.length) {
-            cambiarTexto('MUSICA QUE DISFRUTO HACER');
-            return;
-          }
-
-          const esperadoFECHA = secuenciaFECHA[bufferFECHA.length];
-          if (v === esperadoFECHA) {
-            playBell(bufferFECHA.length);
-            bufferFECHA.push(v);
-          } else bufferFECHA = [];
-
-          if (bufferFECHA.length === secuenciaFECHA.length) {
-            cambiarTexto('19/03 PARTE 1');
-          }
-        };
-      });
-    }
-
-    input.addEventListener('input', () => {
-      const value = input.value.toLowerCase();
-      input.value = '';
-
-      bufferKey += value;
-      bufferKey = bufferKey.replace(/\s+/g, ' ').trimStart();
-
-      Object.entries(combinacionesTeclado).forEach(([key, texto]) => {
-        if (bufferKey.endsWith(key)) {
-          cambiarTexto(texto);
-          bufferKey = '';
-          input.blur();
-        }
-      });
-    });
-
-    makeInteractive();
-  </script>
-
+drawStars();
+</script>
 </body>
 </html>
