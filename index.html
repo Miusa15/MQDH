@@ -31,13 +31,13 @@
       letter-spacing: -0.08em;
       user-select: none;
       max-width: 100vw;
+      flex-wrap: wrap;
+      text-align: center;
     }
 
     .texto.cambiado {
       font-size: clamp(1.4rem, 4vw, 2.4rem);
       letter-spacing: 0.08em;
-      flex-wrap: wrap;
-      text-align: center;
     }
 
     .texto span {
@@ -47,7 +47,9 @@
       padding: 0 0.02em;
     }
 
-    .blink { animation: blink 1.2s infinite ease-in-out; }
+    .blink {
+      animation: blink 1.2s infinite ease-in-out;
+    }
 
     @keyframes blink {
       0%, 100% { opacity: 1; }
@@ -67,6 +69,7 @@
   </style>
 </head>
 <body>
+
   <div class="texto" id="logo">
     <span class="m" data-letter="m">M</span>
     <span class="q" data-letter="q">Q</span>
@@ -131,7 +134,9 @@
     function cambiarTexto(texto) {
       bufferMQDH = [];
       bufferFECHA = [];
-      bufferKey = [];
+      bufferKey = '';
+      bufferClick = [];
+
       logo.classList.add('cambiado');
       logo.innerHTML = '';
 
@@ -139,18 +144,21 @@
 
       textoFinal.split('').forEach(c => {
         const s = document.createElement('span');
-        s.textContent = c === ' ' ? ' ' : c;
+        s.textContent = c === ' ' ? '\u00A0' : c;
         s.dataset.letter = c.toLowerCase();
         if (c === '.') s.classList.add('blink');
         logo.appendChild(s);
       });
+
       makeInteractive();
     }
 
     function volverInicio() {
       bufferMQDH = [];
       bufferFECHA = [];
-      bufferKey = [];
+      bufferKey = '';
+      bufferClick = [];
+
       logo.classList.remove('cambiado');
       logo.innerHTML = `
         <span class="m" data-letter="m">M</span>
@@ -163,8 +171,6 @@
 
     function makeInteractive() {
       logo.querySelectorAll('span').forEach((letra, i) => {
-        if (letra.dataset.letter === '.') letra.classList.add('blink');
-
         letra.onclick = () => {
           if (audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -175,12 +181,17 @@
 
           const v = letra.dataset.letter;
           bufferClick.push(v);
-          if (bufferClick.join('').endsWith('chat')) {
+          bufferClick = bufferClick.slice(-4);
+
+          if (bufferClick.join('') === 'chat') {
             input.focus();
             bufferClick = [];
           }
 
-          if (v === '.') { volverInicio(); return; }
+          if (v === '.') {
+            volverInicio();
+            return;
+          }
 
           const esperadoMQDH = secuenciaMQDH[bufferMQDH.length];
           if (v === esperadoMQDH) {
@@ -200,45 +211,23 @@
           } else bufferFECHA = [];
 
           if (bufferFECHA.length === secuenciaFECHA.length) {
-            cambiarTexto('19/03 PARTE 1.');
+            cambiarTexto('19/03 PARTE 1');
           }
         };
       });
     }
 
     input.addEventListener('input', () => {
-      const char = input.value.toLowerCase();
+      const value = input.value.toLowerCase();
       input.value = '';
 
-      bufferKey += char;
+      bufferKey += value;
+      bufferKey = bufferKey.replace(/\s+/g, ' ').trimStart();
 
-      Object.keys(combinacionesTeclado).forEach(key => {
+      Object.entries(combinacionesTeclado).forEach(([key, texto]) => {
         if (bufferKey.endsWith(key)) {
-          cambiarTexto(combinacionesTeclado[key]);
+          cambiarTexto(texto);
           bufferKey = '';
-          input.blur();
-        }
-      });
-    });
-      input.value = '';
-
-      bufferKey.push(char);
-      const texto = bufferKey.join('').trim();
-
-      Object.keys(combinacionesTeclado).forEach(key => {
-        if (texto.endsWith(key)) {
-          cambiarTexto(combinacionesTeclado[key]);
-          input.blur();
-          bufferKey = [];
-        }
-      });
-    });
-      input.value = '';
-
-      const texto = bufferKey.join('');
-      Object.keys(combinacionesTeclado).forEach(key => {
-        if (texto.endsWith(key)) {
-          cambiarTexto(combinacionesTeclado[key]);
           input.blur();
         }
       });
@@ -246,5 +235,6 @@
 
     makeInteractive();
   </script>
+
 </body>
 </html>
